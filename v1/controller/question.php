@@ -32,7 +32,7 @@ if(array_key_exists("questionid", $_GET)){
     if($_SERVER['REQUEST_METHOD'] === 'GET'){
 
         try{
-            $querry = $readDB->prepare('select id, text, lang_id, confirmed, user_name, DATE_FORMAT(date_of_adding, "%d/%m/%Y %H:%i") from questions where id = :questionid');
+            $querry = $readDB->prepare('select id, text, lang_id, confirmed, user_name, DATE_FORMAT(date_of_adding, "%d/%m/%Y %H:%i") as date_of_adding from questions where id = :questionid');
             $querry->bindParam(':questionid', $questionid, PDO::PARAM_INT);
             $querry->execute();
 
