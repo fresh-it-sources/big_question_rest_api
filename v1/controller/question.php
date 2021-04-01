@@ -87,6 +87,59 @@ if(array_key_exists("questionid", $_GET)){
          
     }elseif($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
+        try{
+            $querry = $writeDB->prepare('DELERE FROM questions WHERE id = :questionid');
+            $querry->bindParam(':questionid', $questionid, PDO::PARAM_INT);
+            $querry->execute();
+
+            $rowCount = $querry->rowCount();
+
+            if($rowCount === 0){
+                $response = new Response();
+                $response->setHttpStatusCode(404);
+                $response->setSuccess(false);
+                $response->addMessage("Question not found");
+                $response->send();
+                exit();               
+            }
+
+            
+            while($row = $querry->fetch(PDO::FETCH_ASSOC)){
+                $tags = array($row['tags']);
+                $question = new Question($row['id'], $row['text'], $tags, $row['lang_id'], $row['confirmed'], $row['user_name'], $row['date_of_adding']);
+
+                $questionArray[] = $question->returnQuestionAsArray();
+            }
+
+            $returnData = array();
+            $returnData['rows_returned'] = $rowCount;
+            $returnData['questions'] = $questionArray;
+
+            $response = new Response();
+            $response->setHttpStatusCode(200);
+            $response->setSuccess(true);
+            $response->addMessage('Question deleted');
+            $response->send();
+            exit();
+
+
+        }catch(QuestionException $ex){
+            $response = new Response();
+            $response->setHttpStatusCode(500);
+            $response->setSuccess(false);
+            $response->addMessage($ex->getMessage());
+            $response->send();
+            exit();    
+        }catch(PDOException $ex){
+            error_log("DB querry error - ".$ex, 0);
+            $response = new Response();
+            $response->setHttpStatusCode(500);
+            $response->setSuccess(false);
+            $response->addMessage("Failed to get Question");
+            $response->send();
+            exit();  
+        }
+
     }elseif($_SERVER['REQUEST_METHOD'] === 'PATCH') {
         
     }else{
