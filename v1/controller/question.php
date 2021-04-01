@@ -138,4 +138,78 @@ if(array_key_exists("questionid", $_GET)){
         $response->send();
         exit();       
     }
+}elseif(array_key_exists("confirmed", $_GET)){
+    $confirmed = $_GET['confirmed'];
+
+    if($confirmed !== 'Y' && $confirmed !== 'N'){
+        $response = new Response();
+        $response->setHttpStatusCode(400);
+        $response->setSuccess(false);
+        $response->addMessage("Confirmed filter must be Y or N");
+        $response->send();
+        exit();
+    }
+
+    if($_SERVER['REQUEST_METHOD'] === 'GET'){
+        try{
+            $querry = $readDB->prepare('select id, text, lang_id, confirmed, user_name, DATE_FORMAT(date_of_adding, "%d/%m/%Y %H:%i") as date_of_adding from questions where confirmed = :confirmed');
+            $querry->bindParam(':confirmed', $confirmed, PDO::PARAM_STR);
+            $querry->execute();
+
+            $rowCount = $querry->rowCount();
+
+            if($rowCount === 0){
+                $response = new Response();
+                $response->setHttpStatusCode(404);
+                $response->setSuccess(false);
+                $response->addMessage("Question not found");
+                $response->send();
+                exit();               
+            }
+            $questionArray = array();
+            
+            while($row = $querry->fetch(PDO::FETCH_ASSOC)){
+                $tags = array($row['tags']);
+                $question = new Question($row['id'], $row['text'], $tags, $row['lang_id'], $row['confirmed'], $row['user_name'], $row['date_of_adding']);
+
+                $questionArray[] = $question->returnQuestionAsArray();
+            }
+
+            $returnData = array();
+            $returnData['rows_returned'] = $rowCount;
+            $returnData['questions'] = $questionArray;
+
+            $response = new Response();
+            $response->setHttpStatusCode(200);
+            $response->setSuccess(true);
+            $response->toCache(true);
+            $response->setData($returnData);
+            $response->send();
+            exit();
+
+
+        }catch(QuestionException $ex){
+            $response = new Response();
+            $response->setHttpStatusCode(500);
+            $response->setSuccess(false);
+            $response->addMessage($ex->getMessage());
+            $response->send();
+            exit();    
+        }catch(PDOException $ex){
+            error_log("DB querry error - ".$ex, 0);
+            $response = new Response();
+            $response->setHttpStatusCode(500);
+            $response->setSuccess(false);
+            $response->addMessage("Failed to get Question");
+            $response->send();
+            exit();  
+        }
+    }else{
+        $response = new Response();
+        $response->setHttpStatusCode(405);
+        $response->setSuccess(false);
+        $response->addMessage("Request methon not allowed");
+        $response->send();
+        exit();         
+    }
 }

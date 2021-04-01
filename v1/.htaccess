@@ -5,3 +5,5 @@ RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-f
 
 RewriteRule ^questions/([0-9]+)$ controller/question.php?questionid=$1 [L]
+RewriteRule ^questions/confirm$ controller/question.php?confirmed=Y [L]
+RewriteRule ^questions/unconfirm$ controller/question.php?confirmed=N [L]
