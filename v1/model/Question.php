@@ -15,7 +15,7 @@ class Question {
     public function __construct($id, $text, $tags, $lang, $confirmed, $userName, $dateOfAdding){
         $this->setID($id);
         $this->setText($text);
-        $this->addTag($tags);
+        $this->setTags($tags);
         $this->setLang($lang);
         $this->setConfirmed($confirmed);
         $this->setUserName($userName);
@@ -73,6 +73,13 @@ class Question {
         $this->_tags[] = $tag;
     }
 
+    public function setTags($tags){
+        if($tags === null || count($tags) <= 0){
+            throw new QuestionException("Question tags array error");
+        }
+        $this->_tags = $tags;
+    }
+
     public function setLang($lang_id){
         if(($lang_id !== null) && (!is_numeric($lang_id) || $lang_id <= 0 || $lang_id > 9223372036854775807 || $this->_lang !== null )){
             throw new QuestionException("Question language id error");
@@ -99,7 +106,7 @@ class Question {
 
     public function setDateOfAdding($dateOfAdding){
 
-        if((dateOfAdding !== null) && date_format(date_create_from_format('d/m/Y H:i', $dateOfAdding), 'd/m/Y H:i') != $dateOfAdding){
+        if(($dateOfAdding !== null) && date_format(date_create_from_format('d/m/Y H:i', $dateOfAdding), 'd/m/Y H:i') != $dateOfAdding){
             throw new QuestionException("Question date of addition error");
         }
 
