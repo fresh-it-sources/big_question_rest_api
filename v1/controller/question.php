@@ -88,7 +88,7 @@ if(array_key_exists("questionid", $_GET)){
     }elseif($_SERVER['REQUEST_METHOD'] === 'DELETE') {
 
         try{
-            $querry = $writeDB->prepare('DELERE FROM questions WHERE id = :questionid');
+            $querry = $writeDB->prepare('DELETE FROM questions WHERE id = :questionid');
             $querry->bindParam(':questionid', $questionid, PDO::PARAM_INT);
             $querry->execute();
 
@@ -102,18 +102,6 @@ if(array_key_exists("questionid", $_GET)){
                 $response->send();
                 exit();               
             }
-
-            
-            while($row = $querry->fetch(PDO::FETCH_ASSOC)){
-                $tags = array($row['tags']);
-                $question = new Question($row['id'], $row['text'], $tags, $row['lang_id'], $row['confirmed'], $row['user_name'], $row['date_of_adding']);
-
-                $questionArray[] = $question->returnQuestionAsArray();
-            }
-
-            $returnData = array();
-            $returnData['rows_returned'] = $rowCount;
-            $returnData['questions'] = $questionArray;
 
             $response = new Response();
             $response->setHttpStatusCode(200);
